@@ -18,7 +18,7 @@
     </queries>
 
     <application
-        android:label="Bandar TV"
+        android:label="Bander TV"
         android:theme="@android:style/Theme.Material.NoActionBar"
         android:allowBackup="false"
         android:usesCleartextTraffic="false">

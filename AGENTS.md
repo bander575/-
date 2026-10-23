@@ -1,37 +1,41 @@
-# AGENTS.md — Codex work plan for Bandar TV
+# AGENTS.md — Bander TV
 
-## Top priority: REAL HOME LAUNCHER, not just a regular app
-Bandar TV must be a user-selectable Android TV HOME launcher, not an app that merely imitates a homepage. Keep `MAIN + HOME + DEFAULT` intent filter alongside a separate `LEANBACK_LAUNCHER` entry to let users test the APK. Honor Android RoleManager Home chooser when supported, otherwise use safe system Home settings. Do not automatically disable the stock launcher or run ADB commands without the owner's permission, exact TV model, and a verified recovery path. Confirm HOME intent resolution and behavior of physical remote Home after selection on emulator and actual device. List genuinely installed apps and launch them, not only demo tiles. When the platform disallows default Home changes, document limitations instead of claiming success.
+## CRITICAL: Ask the user first
 
+At the start of a new Codex setup conversation **ask these two questions before making personal selections**:
+1. **وش النادي اللي تشجعه؟** (Which football team do you support?)
+2. **وش مدينتك أو منطقتك؟** (Which city/region should be used for weather and prayer times?)
 
-## Project goal
-Build an **actual installable Android TV / Google TV app**, owned by the repository owner, based on the current interactive Arabic RTL prototype. Preserve the dark navy/cyan luxurious Riyadh-themed look of the approved second concept. Do NOT replace UI interactions with a static image, and do not blindly clone UrTV.
+Do NOT assume **Al-Hilal**, **Riyadh**, or any other team/city. A user may pick any club and any city worldwide. The launcher itself must ask the same two questions on first opening (the current HTML implements an onboarding dialog); save the user's choices to persistent **device-local settings** and let them change them under Settings. The Codex conversation must also offer to set the user's choices in a test setup, without hard-coding them as defaults for everyone.
+
+City input must be geocoded into a clear chosen locality with name, country, latitude, longitude and IANA timezone. If matching locations are ambiguous, show multiple options and let the user choose. Never silently choose a wrong location. Do not request an exact home address or precise GPS location: city-level coordinates are adequate.
+
+## Product specification
+- **Bander TV is an actual TV HOME launcher**, not a normal entertainment app or a static image. The Android manifest registers MAIN/HOME/DEFAULT and also provides LEANBACK_LAUNCHER for safe preview.
+- When supported by firmware, the user can select it as the system default Home. Never silently disable, delete or overwrite the TV maker's launcher. Offer device-appropriate and reversible setup only.
+- **Pure Arabic RTL lightweight interface**, with "Bander TV" as the only English brand text. No games, kids sections, fake movies, subscriptions, extra entertainment panels, or fake streaming. Keep only الرئيسية / التطبيقات / الإعدادات (plus optional relevant search).
+- First-run club and city/region questions, clearly editable after setup.
+- Home contains installed TV apps; weather and accurate local prayer times for **user-selected city**, and a compact sports area for **user-selected club**. Never hard-code scores or ranking; show factual verified current sports data when a legitimate licensed/reliable live source is configured, and otherwise show a clear **Google Search results link** with a notice that in-app live scores are not yet connected. There is no unrestricted official public Google sports results API, and scraping search HTML as a live feed is brittle; do not mislabel Google links as integrated live results.
+- For weather, use Open-Meteo forecast with chosen coordinates. For prayer, use AlAdhan API, with appropriate selectable calculation method, particularly Umm al-Qura method 4 for Saudi localities. Display unavailable status for failures rather than inventing data. Time display must use selected IANA timezone, not the device owner's presumed city.
+- Discover and launch actually installed Android TV apps with the native bridge; do not show fake installable apps. Provide a sensible empty-state when no apps are found.
+- Fully operable with D-pad up/down/left/right, OK, Back, stable focus and appropriate accessibility labels; TV 1080p layout.
+- No credentials, API secrets or precise location data in public GitHub; preferences remain on device.
+- Prevent the Android privileged JS bridge from being callable by untrusted remote content.
 
 ## Repository
-- `index.html`: browser preview; all HTML/CSS/JS bundled in one page.
-- `app/src/main/assets/index.html`: copy of the preview bundled in the APK, and the actual app UI. Keep both synchronized when changing the UI or refactor cleanly into shared source + build steps.
-- `app/src/main/java/com/bandartv/launcher/MainActivity.java`: Android shell and JS bridge.
-- `app/src/main/AndroidManifest.xml`: Android TV app and intent visibility.
-- `.github/workflows/build-android-tv.yml`: GitHub Actions APK build.
+- `index.html` browser preview. Keep synchronized with `app/src/main/assets/index.html` bundled in APK.
+- `app/src/main/java/com/bandartv/launcher/MainActivity.java`: Android HOME launcher shell, installed app discovery, TV preferences/system settings.
+- `app/src/main/AndroidManifest.xml`: launcher registrations and permissions.
+- `.github/workflows/build-android-tv.yml`: GitHub Actions debug APK build.
 
-## Mandatory acceptance criteria
-1. `gradle :app:assembleDebug` succeeds with JDK 17, Android SDK 35, Gradle 8.9; output `app/build/outputs/apk/debug/app-debug.apk`. Verify in CI and download artifact if possible.
-2. App opens on an Android TV or Google TV emulator, landscape 1920x1080, can navigate every actionable control with directional pad and OK. Preserve focus across navigation and Back. Implement graceful app exit behavior.
-3. Display actual Android installed TV launchable apps through a safe, minimal native bridge (respect Android 11+ package visibility, Android policies), rather than only hard-coded demo icons. Provide favorites and working app launch. Show fallback if not installed.
-4. Build a genuine Home, All Apps, media demo, children, games and Settings screen. Keep Arabic right-to-left.
-5. Create a proper Android TV 320x180 launcher banner and icon, not just a flat background drawable.
-6. Weather/prayer API network failures are nonfatal; time and local UI work offline. Verify prayer source against local method when possible.
-7. No pirated streams, unauthorized IPTV lists, scraping subscriber-only content, or unlicensed third-party artwork. Media and channel sections must stay visibly marked demos until licensed sources are supplied.
-8. Explain exactly how to install and test on the user's Android TV, ADB optional, after obtaining **device brand/model and Android version**. Do not claim that you can silently install remotely or force the Home launcher.
-9. Never commit credentials, tokens, local private data, or signing keys. GitHub Actions debug APK is for testing, not Play Store release.
-10. Record what works, what fails, and emulator/TV model tested in README and/or TESTING.md.
+## Validation required
+1. Build via GitHub Actions or `gradle :app:assembleDebug` and verify artifact exists.
+2. Test first-use setup for arbitrary club and city, including duplicate place names, and confirm preferences survive restart.
+3. Test weather and prayer rendering with the selected location, failure and offline cases, and same timezone.
+4. Test the launcher on emulator using remote D-pad focus and launch of an installed application.
+5. Test optional Home selection and recovery on the actual TV model only after the user supplies brand/model and Android TV/Google TV version.
+6. Mark scores as **external search** until a real, verified scores source is implemented.
+7. Clearly distinguish code build success from an actually tested TV default launcher.
 
-## Suggested implementation order
-- First repair any failing GitHub Actions build and produce a real debug APK.
-- Then run emulator tests; fix crashes and D-pad focus.
-- Then native installed-app discovery/launch, system settings.
-- Then UX polish and offline reliability.
-- Finally device-specific installation and optional Home-selection guidance.
-
-## Constraints
-Do not overpromise live channels or licensed content. Do not require the user to buy services to compile the initial app. If changing to native Compose for TV or Leanback, preserve behavior and RTL style and verify before removing the existing interactive prototype.
+## Safety
+Do not inject counterfeit subscriptions, pirated stream lists or use copyrighted visuals without permission. Do not write signing keys or secrets to GitHub.

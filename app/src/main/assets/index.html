@@ -81,7 +81,7 @@ footer{margin-top:5vh;color:#b7c7dc;font-size:13px;display:flex;justify-content:
 <label for="favTeam">وش النادي اللي تشجعه؟</label>
 <input id="favTeam" autocomplete="off" placeholder="اكتب اسم ناديك المفضل" maxlength="75">
 <label for="city">وش مدينتك أو منطقتك؟</label>
-<input id="city" autocomplete="off" placeholder="مثال: جدة، السعودية" maxlength="100">
+<input id="city" autocomplete="off" placeholder="مثال: جدة" maxlength="100">
 <p class="tiny">نحتاج المدينة لعرض الطقس ومواقيت الصلاة. ما نحتاج موقعك الدقيق.</p>
 <p id="setupError" class="err" role="status"></p>
 <div id="locationOptions" class="location-options"></div>
@@ -127,7 +127,7 @@ function showSetup(){byId('setup').classList.remove('hidden');byId('favTeam').va
 function closeSetup(){byId('setup').classList.add('hidden');byId('locationOptions').innerHTML='';view='home';render()}
 function setError(s){byId('setupError').textContent=s}
 async function resolveCity(q){setError('جارٍ البحث عن مدينتك…');byId('locationOptions').innerHTML='';
-try{var response=await fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(q)+'&count=5&language=ar&format=json');if(!response.ok)throw Error('network');
+try{var response=await fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(q.split(/[،,]/)[0].trim())+'&count=5&language=ar&format=json');if(!response.ok)throw Error('network');
 var data=await response.json();locationMatches=(data.results||[]).filter(function(p){return Number.isFinite(p.latitude)&&Number.isFinite(p.longitude)});
 if(!locationMatches.length){setError('ما لقينا المدينة. جرّب اسم المدينة مع الدولة.');return}
 setError('اختر مدينتك من النتائج:');

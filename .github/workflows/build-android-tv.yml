@@ -20,10 +20,14 @@ jobs:
           distribution: temurin
           java-version: '17'
       - name: Prepare Android SDK
+        shell: bash
         run: |
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager "platforms;android-35" "build-tools;35.0.0"
+          set -e
+          SDKMANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -path '*/bin/sdkmanager' | sort -V | tail -n 1)
+          if [ -z "$SDKMANAGER" ]; then echo 'sdkmanager not installed'; exit 1; fi
+          echo "Using $SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0"
       - name: Use Gradle 8.9
         uses: gradle/actions/setup-gradle@v4
         with:

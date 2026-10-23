@@ -1,5 +1,9 @@
 # AGENTS.md — Codex work plan for Bandar TV
 
+## Top priority: REAL HOME LAUNCHER, not just a regular app
+Bandar TV must be a user-selectable Android TV HOME launcher, not an app that merely imitates a homepage. Keep `MAIN + HOME + DEFAULT` intent filter alongside a separate `LEANBACK_LAUNCHER` entry to let users test the APK. Honor Android RoleManager Home chooser when supported, otherwise use safe system Home settings. Do not automatically disable the stock launcher or run ADB commands without the owner's permission, exact TV model, and a verified recovery path. Confirm HOME intent resolution and behavior of physical remote Home after selection on emulator and actual device. List genuinely installed apps and launch them, not only demo tiles. When the platform disallows default Home changes, document limitations instead of claiming success.
+
+
 ## Project goal
 Build an **actual installable Android TV / Google TV app**, owned by the repository owner, based on the current interactive Arabic RTL prototype. Preserve the dark navy/cyan luxurious Riyadh-themed look of the approved second concept. Do NOT replace UI interactions with a static image, and do not blindly clone UrTV.
 
